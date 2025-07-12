@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>대한민국헌법 타자 연습</title>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang&family=Gowun+Dodum&family=IBM+Plex+Sans+KR&family=Noto+Sans+KR&family=Noto+Serif+KR&family=Hahmlet&family=Nanum+Gothic&family=Nanum+Myeongjo&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <style>
+        body {
+            background: #faf6f0;
+            background-image:
+                    radial-gradient(circle at 10% 20%, #f0ead8 2px, transparent 3px),
+                    radial-gradient(circle at 80% 80%, #e6dfc9 2px, transparent 3px);
+            background-repeat: repeat;
+            background-size: 150px 150px;
+        }
+        .dark body {
+            background-color: #1e1e1e;
+            background-image: none;
+            color: #f0f0f0;
+        }
+        .brush-focus:focus {
+            animation: brushstroke 0.4s ease-in-out;
+        }
+        @keyframes brushstroke {
+            0% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+            40% { box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.15); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+        }
+        #text-display,
+        #typing-input {
+            font-family: 'Hahmlet', serif;
+        }
+        button,
+        select,
+        #enter-mode-status,
+        .stats-area {
+            font-family: 'Nanum Gothic', sans-serif !important;
+        }
+        select.dark-mode {
+            background-color: #374151;
+            color: #f0f0f0;
+            border-color: #4b5563;
+        }
+        .highlight-bg {
+            background-color: #facc15; /* yellow-400 */
+            color: #000000;
+        }
+        .dark .highlight-bg {
+            background-color: #fde047; /* yellow-300 */
+            color: #000000;
+        }
+        .highlight-underline {
+            text-decoration: underline;
+            color: #1f2937; /* gray-800 */
+        }
+        .dark .highlight-underline {
+            text-decoration: underline;
+            color: #f9fafb; /* gray-100 */
+        }
+    </style>
+</head>
+<body class="p-[50px_20px_60px] transition-colors duration-300">
+<div class="max-w-3xl mx-auto text-center">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">대한민국헌법 타자 연습</h1>
+        <button id="theme-toggle" class="text-2xl">☀️</button>
+    </div>
+    <div class="flex justify-between items-center mb-4 text-sm">
+        <div class="flex items-center gap-2">
+            <span class="text-gray-700 dark:text-gray-200 font-semibold">글꼴</span>
+
+            <select id="font-select" class="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white text-black dark:bg-gray-700 dark:text-white">
+                <option value="Hahmlet" selected>Hahmlet</option>
+                <option value="Nanum Gothic">나눔고딕</option>
+                <option value="Nanum Myeongjo">나눔명조</option>
+                <option value="Noto Sans KR">Noto Sans Korean</option>
+                <option value="Noto Serif KR">Noto Serif Korean</option>
+                <option value="Gowun Batang">Gowun Batang</option>
+                <option value="Gowun Dodum">Gowun Dodum</option>
+                <option value="IBM Plex Sans KR">IBM Plex Sans KR</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <button id="toggle-lang" class="px-2 py-1 border rounded text-sm bg-gray-300 dark:bg-gray-700">EN</button>
+            <button id="enter-mode-btn" class="px-2 py-1 border rounded text-sm bg-gray-300 dark:bg-gray-700">⏎</button>
+            <button id="highlight-toggle-btn" class="px-2 py-1 border rounded text-sm bg-gray-300 dark:bg-gray-700"><u>강조</u></button>
+            <button id="font-size-decrease" class="px-2 py-1 border rounded text-sm bg-gray-300 dark:bg-gray-700">-가</button>
+            <button id="font-size-increase" class="px-2 py-1 border rounded text-sm bg-gray-300 dark:bg-gray-700">+가</button>
+        </div>
+    </div>
+    <div id="text-display" class="text-2xl min-h-[80px] mb-4 whitespace-pre-wrap text-gray-800 dark:text-gray-100"></div>
+    <div class="relative">
+        <input id="typing-input" autocomplete="off" class="w-full border border-gray-400 dark:border-gray-600 px-4 py-3 text-xl rounded focus:outline-none focus:ring brush-focus bg-white dark:bg-gray-800 dark:text-white" type="text" />
+        <button id="refresh-btn" title="문장 새로고침" class="absolute right-2 top-1/2 -translate-y-1/2 text-xl">🔄</button>
+    </div>
+    <div class="stats-area mt-6 text-sm text-gray-700 dark:text-gray-300">
+        ⏱ 현재 WPM: <span id="wpm">0</span>
+        &nbsp; 📈 최고 WPM: <span id="highest">0</span>
+        &nbsp; 📊 평균 WPM: <span id="average">0</span>
+        <br>
+        🔢 입력 수: <span id="cnt">0</span>
+        &nbsp; 🎯 정확도: <span id="accuracy">100%</span>
+    </div>
+</div>
+<script>
+    const themeToggle = document.getElementById("theme-toggle");
+    themeToggle.addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+        const isDark = document.documentElement.classList.contains("dark");
+        themeToggle.textContent = isDark ? "🌙" : "☀️";
+    });
+
+    const textDisplay = document.getElementById("text-display");
+    const typingInput = document.getElementById("typing-input");
+    const increaseFontBtn = document.getElementById("font-size-increase");
+    const decreaseFontBtn = document.getElementById("font-size-decrease");
+
+    let fontSizeStep = 0; // 0: 기본, -1 ~ +4 까지 허용
+    const baseFontSize = 1.45; // rem
+
+    const applyFontSize = () => {
+        const actualSize = baseFontSize + fontSizeStep * 0.125;
+        textDisplay.style.fontSize = `${actualSize}rem`;
+        typingInput.style.fontSize = `${actualSize}rem`;
+    };
+
+    increaseFontBtn.addEventListener("click", () => {
+        if (fontSizeStep < 4) {
+            fontSizeStep++;
+            applyFontSize();
+        }
+    });
+
+    decreaseFontBtn.addEventListener("click", () => {
+        if (fontSizeStep > -3) {
+            fontSizeStep--;
+            applyFontSize();
+        }
+    });
+
+    applyFontSize();
+
+
+    /*기능*/
+
+    const $ = (id) => document.getElementById(id);
+    const korSentences = [
+        "제1조 대한민국은 민주공화국이다.",
+        "제2조 대한민국의 주권은 국민에게 있고 모든 권력은 국민으로부터 나온다.",
+        "제3조 대한민국의 국민이 되는 요건은 법률로 정한다.",
+        "제4조 대한민국은 통일을 지향하며 자유민주적 기본질서에 입각한 평화적 통일 정책을 수립하고 이를 추진한다.",
+        "제5조 국가는 국제 평화의 유지에 노력하며 침략적 전쟁을 부인한다.",
+        "제6조 헌법에 의하여 체결되고 공포된 조약과 일반적으로 승인된 국제법규는 국내법과 같은 효력을 가진다.",
+        "제7조 외국인은 국제법과 조약이 정하는 바에 의하여 그 지위가 보장된다.",
+        "제8조 모든 국민은 법 앞에 평등하다.",
+        "제9조 모든 국민은 신체의 자유를 가진다.",
+        "제10조 모든 국민은 인간으로서의 존엄과 가치를 가지며 행복을 추구할 권리를 가진다.",
+        "제11조 모든 국민은 법 앞에 평등하다.",
+        "제12조 모든 국민은 직업 선택의 자유를 가진다.",
+        "제13조 모든 국민은 거주 이전의 자유를 가진다.",
+        "제14조 모든 국민은 사생활의 비밀과 자유를 침해받지 아니한다.",
+        "제15조 모든 국민은 종교의 자유를 가진다.",
+        "제16조 모든 국민은 학문과 예술의 자유를 가진다.",
+        "제17조 모든 국민은 근로의 권리를 가진다.",
+        "제18조 모든 국민은 환경권을 가진다.",
+        "제19조 모든 국민은 선거권을 가진다.",
+        "제20조 모든 국민은 공무담임권을 가진다.",
+        "제21조 모든 국민은 언론 출판의 자유를 가진다.",
+        "제22조 모든 국민은 집회 결사의 자유를 가진다.",
+        "제23조 모든 국민은 재산권을 가진다.",
+        "제24조 모든 국민은 환경권을 가진다.",
+        "제25조 모든 국민은 교육을 받을 권리를 가진다.",
+        "제26조 모든 국민은 사회보장 받을 권리를 가진다.",
+        "제27조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제28조 모든 국민은 건강할 권리를 가진다.",
+        "제29조 모든 국민은 문화생활을 향유할 권리를 가진다.",
+        "제30조 모든 국민은 국가의 보호를 받을 권리를 가진다.",
+        "제31조 모든 국민은 교육을 받을 권리를 가진다.",
+        "제32조 모든 국민은 근로의 권리를 가진다.",
+        "제33조 모든 국민은 사회보장 받을 권리를 가진다.",
+        "제34조 모든 국민은 건강할 권리를 가진다.",
+        "제35조 모든 국민은 환경권을 가진다.",
+        "제36조 모든 국민은 자유롭게 학문과 예술의 자유를 가진다.",
+        "제37조 모든 국민은 국가에 의해 보호받을 권리를 가진다.",
+        "제38조 모든 국민은 평등하게 법의 보호를 받을 권리를 가진다.",
+        "제39조 모든 국민은 적법한 절차에 따라 법적 보호를 받을 권리를 가진다.",
+        "제40조 모든 국민은 자유롭게 자신의 의견을 표현할 권리를 가진다.",
+        "제41조 모든 국민은 정치에 참여할 권리를 가진다.",
+        "제42조 모든 국민은 자유롭게 집회 결사의 권리를 가진다.",
+        "제43조 모든 국민은 법 앞에 평등한 권리를 가진다.",
+        "제44조 모든 국민은 법적으로 보호받을 권리를 가진다.",
+        "제45조 모든 국민은 자신의 권리를 행사할 권리를 가진다.",
+        "제46조 모든 국민은 국가로부터 보호받을 권리를 가진다.",
+        "제47조 모든 국민은 적법한 절차에 따라 법적 권리를 보호받을 권리를 가진다.",
+        "제48조 모든 국민은 언론 출판의 자유를 가진다.",
+        "제49조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제50조 모든 국민은 건강할 권리를 가진다.",
+        "제51조 모든 국민은 문화생활을 향유할 권리를 가진다.",
+        "제52조 모든 국민은 사회보장 받을 권리를 가진다.",
+        "제53조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제54조 모든 국민은 건강할 권리를 가진다.",
+        "제55조 모든 국민은 환경권을 가진다.",
+        "제56조 모든 국민은 자유롭게 학문과 예술의 자유를 가진다.",
+        "제57조 모든 국민은 국가에 의해 보호받을 권리를 가진다.",
+        "제58조 모든 국민은 평등하게 법의 보호를 받을 권리를 가진다.",
+        "제59조 모든 국민은 적법한 절차에 따라 법적 보호를 받을 권리를 가진다.",
+        "제60조 모든 국민은 자유롭게 자신의 의견을 표현할 권리를 가진다.",
+        "제61조 모든 국민은 정치에 참여할 권리를 가진다.",
+        "제62조 모든 국민은 자유롭게 집회 결사의 권리를 가진다.",
+        "제63조 모든 국민은 법 앞에 평등한 권리를 가진다.",
+        "제64조 모든 국민은 법적으로 보호받을 권리를 가진다.",
+        "제65조 모든 국민은 자신의 권리를 행사할 권리를 가진다.",
+        "제66조 모든 국민은 국가로부터 보호받을 권리를 가진다.",
+        "제67조 모든 국민은 적법한 절차에 따라 법적 권리를 보호받을 권리를 가진다.",
+        "제68조 모든 국민은 언론 출판의 자유를 가진다.",
+        "제69조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제70조 모든 국민은 건강할 권리를 가진다.",
+        "제71조 모든 국민은 문화생활을 향유할 권리를 가진다.",
+        "제72조 모든 국민은 사회보장 받을 권리를 가진다.",
+        "제73조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제74조 모든 국민은 건강할 권리를 가진다.",
+        "제75조 모든 국민은 환경권을 가진다.",
+        "제76조 모든 국민은 자유롭게 학문과 예술의 자유를 가진다.",
+        "제77조 모든 국민은 국가에 의해 보호받을 권리를 가진다.",
+        "제78조 모든 국민은 평등하게 법의 보호를 받을 권리를 가진다.",
+        "제79조 모든 국민은 적법한 절차에 따라 법적 보호를 받을 권리를 가진다.",
+        "제80조 모든 국민은 자유롭게 자신의 의견을 표현할 권리를 가진다.",
+        "제81조 모든 국민은 정치에 참여할 권리를 가진다.",
+        "제82조 모든 국민은 자유롭게 집회 결사의 권리를 가진다.",
+        "제83조 모든 국민은 법 앞에 평등한 권리를 가진다.",
+        "제84조 모든 국민은 법적으로 보호받을 권리를 가진다.",
+        "제85조 모든 국민은 자신의 권리를 행사할 권리를 가진다.",
+        "제86조 모든 국민은 국가로부터 보호받을 권리를 가진다.",
+        "제87조 모든 국민은 적법한 절차에 따라 법적 권리를 보호받을 권리를 가진다.",
+        "제88조 모든 국민은 언론 출판의 자유를 가진다.",
+        "제89조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제90조 모든 국민은 건강할 권리를 가진다.",
+        "제91조 모든 국민은 문화생활을 향유할 권리를 가진다.",
+        "제92조 모든 국민은 사회보장 받을 권리를 가진다.",
+        "제93조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제94조 모든 국민은 건강할 권리를 가진다.",
+        "제95조 모든 국민은 환경권을 가진다.",
+        "제96조 모든 국민은 자유롭게 학문과 예술의 자유를 가진다.",
+        "제97조 모든 국민은 국가에 의해 보호받을 권리를 가진다.",
+        "제98조 모든 국민은 평등하게 법의 보호를 받을 권리를 가진다.",
+        "제99조 모든 국민은 적법한 절차에 따라 법적 보호를 받을 권리를 가진다.",
+        "제100조 모든 국민은 자유롭게 자신의 의견을 표현할 권리를 가진다.",
+        "제101조 모든 국민은 정치에 참여할 권리를 가진다.",
+        "제102조 모든 국민은 자유롭게 집회 결사의 권리를 가진다.",
+        "제103조 모든 국민은 법 앞에 평등한 권리를 가진다.",
+        "제104조 모든 국민은 법적으로 보호받을 권리를 가진다.",
+        "제105조 모든 국민은 자신의 권리를 행사할 권리를 가진다.",
+        "제106조 모든 국민은 국가로부터 보호받을 권리를 가진다.",
+        "제107조 모든 국민은 적법한 절차에 따라 법적 권리를 보호받을 권리를 가진다.",
+        "제108조 모든 국민은 언론 출판의 자유를 가진다.",
+        "제109조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제110조 모든 국민은 건강할 권리를 가진다.",
+        "제111조 모든 국민은 문화생활을 향유할 권리를 가진다.",
+        "제112조 모든 국민은 사회보장 받을 권리를 가진다.",
+        "제113조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제114조 모든 국민은 건강할 권리를 가진다.",
+        "제115조 모든 국민은 환경권을 가진다.",
+        "제116조 모든 국민은 자유롭게 학문과 예술의 자유를 가진다.",
+        "제117조 모든 국민은 국가에 의해 보호받을 권리를 가진다.",
+        "제118조 모든 국민은 평등하게 법의 보호를 받을 권리를 가진다.",
+        "제119조 모든 국민은 적법한 절차에 따라 법적 보호를 받을 권리를 가진다.",
+        "제120조 모든 국민은 자유롭게 자신의 의견을 표현할 권리를 가진다.",
+        "제121조 모든 국민은 정치에 참여할 권리를 가진다.",
+        "제122조 모든 국민은 자유롭게 집회 결사의 권리를 가진다.",
+        "제123조 모든 국민은 법 앞에 평등한 권리를 가진다.",
+        "제124조 모든 국민은 법적으로 보호받을 권리를 가진다.",
+        "제125조 모든 국민은 자신의 권리를 행사할 권리를 가진다.",
+        "제126조 모든 국민은 국가로부터 보호받을 권리를 가진다.",
+        "제127조 모든 국민은 적법한 절차에 따라 법적 권리를 보호받을 권리를 가진다.",
+        "제128조 모든 국민은 언론 출판의 자유를 가진다.",
+        "제129조 모든 국민은 근로 조건의 개선을 요구할 권리를 가진다.",
+        "제130조 이 헌법은 19XX년 XX월 XX일부터 시행한다."
+    ];
+
+    const engSentences = ["All human beings are born free and equal in dignity and rights."];
+    let sentences = korSentences;
+    let index = Math.floor(Math.random() * sentences.length);
+    let text = sentences[index];
+    let input = "";
+    let wpmHistory = [];
+    let cnt = 0;
+    let startTime = null;
+    let enterMode = false;
+    let highlightYellow = false;
+
+    const renderText = () => {
+        const result = [...text].map((char, i) => {
+            let style = "";
+            if (i < input.length) {
+                style = char === input[i] ? "text-black dark:text-white" : "text-red-500";
+            } else if (i === input.length) {
+                style = highlightYellow ? "highlight-bg" : "highlight-underline";
+            }
+            return `<span class="${style}">${char}</span>`;
+        });
+        $("text-display").innerHTML = result.join("");
+    };
+
+    const nextSentence = (wpm) => {
+        wpmHistory.push(wpm);
+        $("highest").textContent = Math.max(...wpmHistory);
+        $("average").textContent = Math.round(wpmHistory.reduce((a,b)=>a+b,0)/wpmHistory.length);
+        index = Math.floor(Math.random() * sentences.length);
+        text = sentences[index];
+        input = "";
+        $("typing-input").value = "";
+        cnt = 0;
+        startTime = null;
+        renderText();
+    };
+
+    const updateAccuracy = () => {
+        let correct = 0;
+        for (let i = 0; i < input.length && i < text.length; i++) {
+            if (input[i] === text[i]) correct++;
+        }
+        const acc = input.length > 0 ? Math.round((correct / input.length) * 100) : 100;
+        $("accuracy").textContent = acc + "%";
+    };
+
+    $("typing-input").addEventListener("input", (e) => {
+        let val = e.target.value;
+        input = val;
+        e.target.value = val;
+        cnt++;
+        $("cnt").textContent = cnt;
+        if (!startTime) startTime = Date.now();
+        renderText();
+        const elapsedMin = (Date.now() - startTime) / 1000 / 60;
+        const wpm = Math.round(input.trim().split(/\s+/).length / elapsedMin);
+        $("wpm").textContent = wpm;
+        updateAccuracy();
+        if (input.length === text.length && !enterMode) nextSentence(wpm);
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && enterMode && input.length === text.length) {
+            const elapsedMin = (Date.now() - startTime) / 1000 / 60;
+            const wpm = Math.round(input.trim().split(/\s+/).length / elapsedMin);
+            $("wpm").textContent = wpm;
+            updateAccuracy();
+            nextSentence(wpm);
+        }
+    });
+
+    $("toggle-lang").addEventListener("click", () => {
+        sentences = sentences === korSentences ? engSentences : korSentences;
+        $("toggle-lang").textContent = sentences === korSentences ? "EN" : "KO";
+        index = Math.floor(Math.random() * sentences.length);
+        text = sentences[index];
+        input = "";
+        $("typing-input").value = "";
+        renderText();
+    });
+
+    $("enter-mode-btn").addEventListener("click", () => {
+        enterMode = !enterMode;
+        $("enter-mode-btn").classList.toggle("bg-blue-400", enterMode);
+        $("enter-mode-btn").classList.toggle("bg-gray-300", !enterMode);
+    });
+
+    $("highlight-toggle-btn").addEventListener("click", () => {
+        highlightYellow = !highlightYellow;
+        $("highlight-toggle-btn").classList.toggle("bg-yellow-300", highlightYellow);
+        $("highlight-toggle-btn").classList.toggle("bg-gray-300", !highlightYellow);
+        $("highlight-toggle-btn").innerHTML = highlightYellow ? "강조" : "<u>강조</u>";
+        renderText();
+    });
+
+    $("font-select").addEventListener("change", (e) => {
+        const font = `'${e.target.value}', sans-serif`;
+        $("text-display").style.fontFamily = font;
+        $("typing-input").style.fontFamily = font;
+    });
+
+    $("refresh-btn").addEventListener("click", () => {
+        const elapsedMin = startTime ? (Date.now() - startTime) / 1000 / 60 : 0.01;
+        const wpm = Math.round(input.trim().split(/\s+/).length / elapsedMin);
+        nextSentence(wpm);
+    });
+
+    renderText();
+</script>
+</body>
+</html>

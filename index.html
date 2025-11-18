@@ -146,12 +146,12 @@
                     <div class="text-xs text-red-500">준비 중</div>
                 </div>
 
-                <!-- 서바이벌 모드 카드 (미구현) -->
-                <div class="mode-card bg-gray-200 dark:bg-gray-700 rounded-lg p-6 shadow-lg opacity-50 cursor-not-allowed border-2 border-transparent">
+                <!-- 서바이벌 모드 카드 -->
+                <div class="mode-card bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-500" data-mode="survival">
                     <div class="text-5xl mb-3">❤️</div>
                     <h3 class="text-xl font-bold mb-2 text-gray-800 dark:text-gray-100">서바이벌 모드</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">생명을 지키세요!</p>
-                    <div class="text-xs text-red-500">준비 중</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-500">최고: <span id="survival-best-record">0문장</span></div>
                 </div>
             </div>
         </div>
@@ -236,6 +236,103 @@
                         🔄 다시하기
                     </button>
                     <button id="back-to-game-selection" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold">
+                        ← 게임 선택
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 서바이벌 모드 화면 -->
+        <div id="survival-mode-screen" class="hidden">
+            <!-- 게임 시작 화면 -->
+            <div id="survival-start" class="text-center">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">❤️ 서바이벌 모드</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg max-w-md mx-auto mb-6">
+                    <div class="text-6xl mb-4">❤️❤️❤️</div>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">게임 규칙</h3>
+                    <div class="text-left space-y-2 text-gray-700 dark:text-gray-300">
+                        <p>• 생명 3개로 시작</p>
+                        <p>• 각 문장마다 시간 제한</p>
+                        <p>• 정확도 80% 미만: 생명 -1</p>
+                        <p>• 시간 초과: 생명 -1</p>
+                        <p>• 문장 완료할수록 시간 단축</p>
+                        <p>• 생명 0이면 게임 오버</p>
+                    </div>
+                </div>
+                <button id="survival-start-btn" class="px-8 py-4 bg-red-500 hover:bg-red-600 text-white rounded-lg text-lg font-semibold">
+                    🎮 게임 시작
+                </button>
+                <button id="back-to-selection-survival" class="mt-4 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg block mx-auto">
+                    ← 게임 선택으로 돌아가기
+                </button>
+            </div>
+
+            <!-- 카운트다운 -->
+            <div id="survival-countdown" class="hidden text-center">
+                <div class="text-9xl font-bold text-red-500 dark:text-red-400" id="survival-countdown-number">3</div>
+            </div>
+
+            <!-- 게임 플레이 -->
+            <div id="survival-gameplay" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="text-2xl">
+                        <span id="survival-lives">❤️❤️❤️</span>
+                    </div>
+                    <div class="text-lg font-semibold">
+                        <span class="text-blue-500">📝 <span id="survival-sentences-count">0</span>문장</span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                        <div id="survival-timer-bar" class="bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 h-4 transition-all duration-1000" style="width: 100%"></div>
+                    </div>
+                    <div class="text-center mt-2 text-lg font-semibold">
+                        <span class="text-red-500">⏱️ <span id="survival-timer-display">0</span>초</span>
+                    </div>
+                </div>
+                <div id="survival-text-display" class="text-2xl min-h-[80px] mb-4 whitespace-pre-wrap text-gray-800 dark:text-gray-100"></div>
+                <input id="survival-typing-input" autocomplete="off" class="w-full border border-gray-400 dark:border-gray-600 px-4 py-3 text-xl rounded focus:outline-none focus:ring bg-white dark:bg-gray-800 dark:text-white" type="text" />
+                <div class="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
+                    정확도: <span id="survival-accuracy" class="font-bold">100</span>%
+                </div>
+            </div>
+
+            <!-- 결과 화면 -->
+            <div id="survival-result" class="hidden text-center">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">💀 게임 오버!</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg max-w-md mx-auto">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <div class="space-y-3 text-left">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-600 dark:text-gray-400">완료 문장:</span>
+                            <span class="font-bold text-gray-800 dark:text-gray-100"><span id="survival-result-sentences">0</span>개</span>
+                        </div>
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-600 dark:text-gray-400">평균 WPM:</span>
+                            <span class="font-bold text-gray-800 dark:text-gray-100"><span id="survival-result-wpm">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-600 dark:text-gray-400">평균 정확도:</span>
+                            <span class="font-bold text-gray-800 dark:text-gray-100"><span id="survival-result-accuracy">0</span>%</span>
+                        </div>
+                        <hr class="my-4 border-gray-300 dark:border-gray-600">
+                        <div class="flex justify-between text-2xl">
+                            <span class="text-gray-600 dark:text-gray-400">최종 점수:</span>
+                            <span class="font-bold text-red-500"><span id="survival-result-score">0</span>점</span>
+                        </div>
+                    </div>
+                    <div id="survival-new-record-badge" class="hidden mt-4 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 py-2 px-4 rounded-lg">
+                        🎊 새로운 기록 달성!
+                    </div>
+                    <div class="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                        🏆 개인 최고 기록: <span id="survival-result-best-score">0</span>점
+                    </div>
+                </div>
+                <div class="flex gap-4 justify-center mt-6">
+                    <button id="survival-retry-btn" class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold">
+                        🔄 다시하기
+                    </button>
+                    <button id="survival-back-to-selection" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold">
                         ← 게임 선택
                     </button>
                 </div>
@@ -447,6 +544,7 @@
     // 게임 모드 선택
     const gameSelectionScreen = $("game-selection-screen");
     const speedChallengeScreen = $("speed-challenge-screen");
+    const survivalModeScreen = $("survival-mode-screen");
 
     const modeCards = document.querySelectorAll(".mode-card[data-mode]");
     modeCards.forEach(card => {
@@ -455,7 +553,13 @@
             if (mode === "speed") {
                 gameSelectionScreen.classList.add("hidden");
                 speedChallengeScreen.classList.remove("hidden");
+                survivalModeScreen.classList.add("hidden");
                 $("speed-difficulty-selection").classList.remove("hidden");
+            } else if (mode === "survival") {
+                gameSelectionScreen.classList.add("hidden");
+                speedChallengeScreen.classList.add("hidden");
+                survivalModeScreen.classList.remove("hidden");
+                $("survival-start").classList.remove("hidden");
             }
         });
     });
@@ -464,10 +568,15 @@
     function showGameSelection() {
         gameSelectionScreen.classList.remove("hidden");
         speedChallengeScreen.classList.add("hidden");
+        survivalModeScreen.classList.add("hidden");
         $("speed-difficulty-selection").classList.remove("hidden");
         $("speed-countdown").classList.add("hidden");
         $("speed-gameplay").classList.add("hidden");
         $("speed-result").classList.add("hidden");
+        $("survival-start").classList.remove("hidden");
+        $("survival-countdown").classList.add("hidden");
+        $("survival-gameplay").classList.add("hidden");
+        $("survival-result").classList.add("hidden");
     }
 
     $("back-to-selection").addEventListener("click", showGameSelection);
@@ -700,6 +809,13 @@
                 easy: { bestScore: 0, bestDate: null, bestSentences: 0, bestWPM: 0, playCount: 0 },
                 normal: { bestScore: 0, bestDate: null, bestSentences: 0, bestWPM: 0, playCount: 0 },
                 hard: { bestScore: 0, bestDate: null, bestSentences: 0, bestWPM: 0, playCount: 0 }
+            },
+            survivalMode: {
+                bestScore: 0,
+                bestDate: null,
+                bestSentences: 0,
+                bestWPM: 0,
+                playCount: 0
             }
         };
 
@@ -723,7 +839,288 @@
         const data = loadGameData();
         const bestNormal = data.speedChallenge.normal.bestSentences || 0;
         $("speed-best-record").textContent = bestNormal + "문장";
+        const bestSurvival = data.survivalMode.bestSentences || 0;
+        $("survival-best-record").textContent = bestSurvival + "문장";
     }
+
+    // ==================== 서바이벌 모드 ====================
+
+    let survivalGameState = {
+        lives: 3,
+        sentencesCompleted: 0,
+        currentText: "",
+        currentInput: "",
+        timeLimit: 0,
+        timeLeft: 0,
+        totalCorrect: 0,
+        totalChars: 0,
+        wpmList: [],
+        accuracyList: [],
+        gameStartTime: null,
+        sentenceStartTime: null,
+        timerInterval: null
+    };
+
+    // 서바이벌 모드 시작 버튼
+    $("survival-start-btn").addEventListener("click", () => {
+        startSurvivalCountdown();
+    });
+
+    $("back-to-selection-survival").addEventListener("click", showGameSelection);
+    $("survival-back-to-selection").addEventListener("click", showGameSelection);
+
+    // 카운트다운
+    function startSurvivalCountdown() {
+        $("survival-start").classList.add("hidden");
+        $("survival-countdown").classList.remove("hidden");
+
+        let count = 3;
+        $("survival-countdown-number").textContent = count;
+
+        const countInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                $("survival-countdown-number").textContent = count;
+            } else {
+                clearInterval(countInterval);
+                $("survival-countdown").classList.add("hidden");
+                startSurvivalGame();
+            }
+        }, 1000);
+    }
+
+    // 게임 시작
+    function startSurvivalGame() {
+        // 게임 상태 초기화
+        survivalGameState.lives = 3;
+        survivalGameState.sentencesCompleted = 0;
+        survivalGameState.currentInput = "";
+        survivalGameState.totalCorrect = 0;
+        survivalGameState.totalChars = 0;
+        survivalGameState.wpmList = [];
+        survivalGameState.accuracyList = [];
+        survivalGameState.gameStartTime = Date.now();
+
+        // 화면 표시
+        $("survival-gameplay").classList.remove("hidden");
+        $("survival-typing-input").value = "";
+        $("survival-typing-input").focus();
+        updateSurvivalLives();
+
+        // 첫 문장 로드
+        loadNextSurvivalSentence();
+    }
+
+    // 생명 표시 업데이트
+    function updateSurvivalLives() {
+        const hearts = "❤️".repeat(survivalGameState.lives) + "🖤".repeat(3 - survivalGameState.lives);
+        $("survival-lives").textContent = hearts;
+    }
+
+    // 시간 제한 계산 (문장 길이 + 난이도)
+    function calculateSurvivalTimeLimit(textLength, sentenceCount) {
+        const baseTime = (textLength / 3) + 5;
+        const difficultyMultiplier = sentenceCount < 5 ? 1.0 :
+                                     sentenceCount < 10 ? 0.9 :
+                                     sentenceCount < 15 ? 0.8 : 0.7;
+        return Math.ceil(baseTime * difficultyMultiplier);
+    }
+
+    // 다음 문장 로드
+    function loadNextSurvivalSentence() {
+        const randomIndex = Math.floor(Math.random() * korSentences.length);
+        survivalGameState.currentText = korSentences[randomIndex];
+        survivalGameState.currentInput = "";
+        survivalGameState.timeLimit = calculateSurvivalTimeLimit(
+            survivalGameState.currentText.length,
+            survivalGameState.sentencesCompleted
+        );
+        survivalGameState.timeLeft = survivalGameState.timeLimit;
+        survivalGameState.sentenceStartTime = Date.now();
+
+        $("survival-sentences-count").textContent = survivalGameState.sentencesCompleted;
+        $("survival-timer-display").textContent = survivalGameState.timeLeft;
+        $("survival-timer-bar").style.width = "100%";
+        $("survival-accuracy").textContent = 100;
+
+        renderSurvivalText();
+        startSurvivalTimer();
+    }
+
+    // 타이머 시작
+    function startSurvivalTimer() {
+        if (survivalGameState.timerInterval) {
+            clearInterval(survivalGameState.timerInterval);
+        }
+
+        survivalGameState.timerInterval = setInterval(() => {
+            survivalGameState.timeLeft--;
+            $("survival-timer-display").textContent = survivalGameState.timeLeft;
+
+            const percentage = (survivalGameState.timeLeft / survivalGameState.timeLimit) * 100;
+            $("survival-timer-bar").style.width = percentage + "%";
+
+            if (survivalGameState.timeLeft <= 0) {
+                clearInterval(survivalGameState.timerInterval);
+                loseLife("시간 초과!");
+            }
+        }, 1000);
+    }
+
+    // 서바이벌 텍스트 렌더링
+    function renderSurvivalText() {
+        const text = survivalGameState.currentText;
+        const input = survivalGameState.currentInput;
+
+        const result = [...text].map((char, i) => {
+            let style = "";
+            if (i < input.length) {
+                style = char === input[i] ? "text-black dark:text-white" : "text-red-500";
+            } else if (i === input.length) {
+                style = "highlight-bg";
+            }
+            return `<span class="${style}">${char}</span>`;
+        });
+
+        $("survival-text-display").innerHTML = result.join("");
+    }
+
+    // 서바이벌 입력 처리
+    $("survival-typing-input").addEventListener("input", (e) => {
+        survivalGameState.currentInput = e.target.value;
+
+        renderSurvivalText();
+        updateSurvivalAccuracy();
+
+        // 문장 완료 확인
+        if (survivalGameState.currentInput.length === survivalGameState.currentText.length) {
+            const accuracy = calculateCurrentAccuracy();
+
+            if (accuracy < 80) {
+                loseLife("정확도 80% 미만!");
+            } else {
+                // 성공
+                clearInterval(survivalGameState.timerInterval);
+
+                // WPM 계산
+                const elapsedMin = (Date.now() - survivalGameState.sentenceStartTime) / 1000 / 60;
+                const wpm = Math.round(survivalGameState.currentInput.trim().split(/\s+/).length / elapsedMin);
+                survivalGameState.wpmList.push(wpm);
+                survivalGameState.accuracyList.push(accuracy);
+
+                // 정확도 누적
+                for (let i = 0; i < survivalGameState.currentInput.length; i++) {
+                    survivalGameState.totalChars++;
+                    if (survivalGameState.currentInput[i] === survivalGameState.currentText[i]) {
+                        survivalGameState.totalCorrect++;
+                    }
+                }
+
+                survivalGameState.sentencesCompleted++;
+                $("survival-typing-input").value = "";
+
+                // 다음 문장
+                setTimeout(() => {
+                    loadNextSurvivalSentence();
+                }, 300);
+            }
+        }
+    });
+
+    // 현재 문장 정확도 계산
+    function calculateCurrentAccuracy() {
+        let correct = 0;
+        for (let i = 0; i < survivalGameState.currentInput.length; i++) {
+            if (survivalGameState.currentInput[i] === survivalGameState.currentText[i]) {
+                correct++;
+            }
+        }
+        return survivalGameState.currentInput.length > 0
+            ? Math.round((correct / survivalGameState.currentInput.length) * 100)
+            : 100;
+    }
+
+    // 서바이벌 정확도 업데이트
+    function updateSurvivalAccuracy() {
+        const accuracy = calculateCurrentAccuracy();
+        $("survival-accuracy").textContent = accuracy;
+    }
+
+    // 생명 감소
+    function loseLife(reason) {
+        clearInterval(survivalGameState.timerInterval);
+
+        survivalGameState.lives--;
+        updateSurvivalLives();
+
+        if (survivalGameState.lives <= 0) {
+            // 게임 오버
+            setTimeout(() => {
+                endSurvivalGame();
+            }, 500);
+        } else {
+            // 다음 문장으로
+            alert(reason + " 생명 -1");
+            survivalGameState.accuracyList.push(0);
+            $("survival-typing-input").value = "";
+            loadNextSurvivalSentence();
+        }
+    }
+
+    // 게임 종료
+    function endSurvivalGame() {
+        clearInterval(survivalGameState.timerInterval);
+
+        $("survival-gameplay").classList.add("hidden");
+        $("survival-result").classList.remove("hidden");
+
+        // 결과 계산
+        const sentences = survivalGameState.sentencesCompleted;
+        const avgWPM = survivalGameState.wpmList.length > 0
+            ? Math.round(survivalGameState.wpmList.reduce((a, b) => a + b, 0) / survivalGameState.wpmList.length)
+            : 0;
+        const avgAccuracy = survivalGameState.accuracyList.length > 0
+            ? Math.round(survivalGameState.accuracyList.reduce((a, b) => a + b, 0) / survivalGameState.accuracyList.length)
+            : 0;
+        const score = Math.round(sentences * avgWPM * (avgAccuracy / 100));
+
+        // 결과 표시
+        $("survival-result-sentences").textContent = sentences;
+        $("survival-result-wpm").textContent = avgWPM;
+        $("survival-result-accuracy").textContent = avgAccuracy;
+        $("survival-result-score").textContent = score;
+
+        // 최고 기록 확인 및 저장
+        const savedData = loadGameData();
+        const bestScore = savedData.survivalMode?.bestScore || 0;
+
+        $("survival-result-best-score").textContent = Math.max(bestScore, score);
+
+        if (score > bestScore) {
+            $("survival-new-record-badge").classList.remove("hidden");
+            savedData.survivalMode = {
+                bestScore: score,
+                bestDate: new Date().toISOString().split('T')[0],
+                bestSentences: sentences,
+                bestWPM: avgWPM,
+                playCount: (savedData.survivalMode?.playCount || 0) + 1
+            };
+            saveGameData(savedData);
+            loadBestRecords();
+        } else {
+            $("survival-new-record-badge").classList.add("hidden");
+            if (savedData.survivalMode) {
+                savedData.survivalMode.playCount++;
+                saveGameData(savedData);
+            }
+        }
+    }
+
+    // 다시하기
+    $("survival-retry-btn").addEventListener("click", () => {
+        $("survival-result").classList.add("hidden");
+        $("survival-start").classList.remove("hidden");
+    });
 
 </script>
 </body>

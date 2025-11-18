@@ -685,9 +685,19 @@
             clearInterval(speedGameState.timerInterval);
             speedGameState.timerInterval = null;
         }
+        if (speedGameState.countdownInterval) {
+            clearInterval(speedGameState.countdownInterval);
+            speedGameState.countdownInterval = null;
+            speedGameState.isCountingDown = false;
+        }
         if (survivalGameState.timerInterval) {
             clearInterval(survivalGameState.timerInterval);
             survivalGameState.timerInterval = null;
+        }
+        if (survivalGameState.countdownInterval) {
+            clearInterval(survivalGameState.countdownInterval);
+            survivalGameState.countdownInterval = null;
+            survivalGameState.isCountingDown = false;
         }
         if (quizGameState.timerInterval) {
             clearInterval(quizGameState.timerInterval);
@@ -728,7 +738,9 @@
         wpmList: [],
         gameStartTime: null,
         timerInterval: null,
-        gameSentences: []
+        gameSentences: [],
+        isCountingDown: false,
+        countdownInterval: null
     };
 
     // 난이도별 문장 필터링
@@ -746,6 +758,8 @@
     const difficultyBtns = document.querySelectorAll(".difficulty-btn");
     difficultyBtns.forEach(btn => {
         btn.addEventListener("click", () => {
+            if (speedGameState.isCountingDown) return; // 카운트다운 중복 방지
+
             const difficulty = btn.dataset.difficulty;
             speedGameState.difficulty = difficulty;
             speedGameState.gameSentences = getSentencesByDifficulty(difficulty);
@@ -755,18 +769,21 @@
 
     // 카운트다운
     function startCountdown() {
+        speedGameState.isCountingDown = true;
         $("speed-difficulty-selection").classList.add("hidden");
         $("speed-countdown").classList.remove("hidden");
 
         let count = 3;
         $("countdown-number").textContent = count;
 
-        const countInterval = setInterval(() => {
+        speedGameState.countdownInterval = setInterval(() => {
             count--;
             if (count > 0) {
                 $("countdown-number").textContent = count;
             } else {
-                clearInterval(countInterval);
+                clearInterval(speedGameState.countdownInterval);
+                speedGameState.countdownInterval = null;
+                speedGameState.isCountingDown = false;
                 $("speed-countdown").classList.add("hidden");
                 startSpeedGame();
             }
@@ -970,8 +987,14 @@
     function saveGameData(data) {
         try {
             localStorage.setItem('koreaConstitutionTyping_gameData', JSON.stringify(data));
+            return true;
         } catch (e) {
             console.error('Failed to save game data:', e);
+            // 저장 실패 시 사용자에게 알림 (선택적)
+            if (e.name === 'QuotaExceededError') {
+                console.warn('LocalStorage quota exceeded. Game data cannot be saved.');
+            }
+            return false;
         }
     }
 
@@ -1000,11 +1023,14 @@
         accuracyList: [],
         gameStartTime: null,
         sentenceStartTime: null,
-        timerInterval: null
+        timerInterval: null,
+        isCountingDown: false,
+        countdownInterval: null
     };
 
     // 서바이벌 모드 시작 버튼
     $("survival-start-btn").addEventListener("click", () => {
+        if (survivalGameState.isCountingDown) return; // 카운트다운 중복 방지
         startSurvivalCountdown();
     });
 
@@ -1013,18 +1039,21 @@
 
     // 카운트다운
     function startSurvivalCountdown() {
+        survivalGameState.isCountingDown = true;
         $("survival-start").classList.add("hidden");
         $("survival-countdown").classList.remove("hidden");
 
         let count = 3;
         $("survival-countdown-number").textContent = count;
 
-        const countInterval = setInterval(() => {
+        survivalGameState.countdownInterval = setInterval(() => {
             count--;
             if (count > 0) {
                 $("survival-countdown-number").textContent = count;
             } else {
-                clearInterval(countInterval);
+                clearInterval(survivalGameState.countdownInterval);
+                survivalGameState.countdownInterval = null;
+                survivalGameState.isCountingDown = false;
                 $("survival-countdown").classList.add("hidden");
                 startSurvivalGame();
             }
@@ -1274,7 +1303,8 @@
         questions: [],
         timeLeft: 30,
         timerInterval: null,
-        hintUsedForCurrent: false
+        hintUsedForCurrent: false,
+        isSubmitting: false
     };
 
     // 퀴즈 문제 생성
@@ -1353,6 +1383,8 @@
         $("quiz-hint-display").style.display = "none";
         $("quiz-feedback").style.display = "none";
         $("quiz-hint-btn").disabled = false;
+        $("quiz-submit-btn").disabled = false;
+        $("quiz-answer-input").disabled = false;
         $("quiz-answer-input").focus();
 
         // 타이머 시작
@@ -1372,8 +1404,15 @@
 
             if (quizGameState.timeLeft <= 0) {
                 clearInterval(quizGameState.timerInterval);
+                quizGameState.isSubmitting = true;
+
+                // 버튼 비활성화
+                $("quiz-submit-btn").disabled = true;
+                $("quiz-answer-input").disabled = true;
+
                 showQuizFeedback("⏰ 시간 초과!", false);
                 setTimeout(() => {
+                    quizGameState.isSubmitting = false;
                     quizGameState.currentQuestion++;
                     loadQuizQuestion();
                 }, 1500);
@@ -1407,10 +1446,19 @@
     });
 
     function submitQuizAnswer() {
+        if (quizGameState.isSubmitting) return; // 중복 제출 방지
+
         const userAnswer = $("quiz-answer-input").value.trim();
+        if (!userAnswer) return; // 빈 답변 방지
+
         const question = quizGameState.questions[quizGameState.currentQuestion];
 
+        quizGameState.isSubmitting = true;
         clearInterval(quizGameState.timerInterval);
+
+        // 제출 버튼 비활성화
+        $("quiz-submit-btn").disabled = true;
+        $("quiz-answer-input").disabled = true;
 
         if (userAnswer === question.answer) {
             // 정답
@@ -1433,6 +1481,7 @@
 
         // 다음 문제로
         setTimeout(() => {
+            quizGameState.isSubmitting = false;
             quizGameState.currentQuestion++;
             loadQuizQuestion();
         }, 2000);
@@ -1499,6 +1548,39 @@
     $("quiz-retry-btn").addEventListener("click", () => {
         $("quiz-result").classList.add("hidden");
         $("quiz-start").classList.remove("hidden");
+    });
+
+    // ==================== 키보드 접근성 ====================
+
+    document.addEventListener("keydown", (e) => {
+        // ESC 키: 게임 중 게임 선택 화면으로 돌아가기
+        if (e.key === "Escape") {
+            // 게임 플레이 중일 때만 작동
+            const isSpeedPlaying = !$("speed-gameplay").classList.contains("hidden");
+            const isSurvivalPlaying = !$("survival-gameplay").classList.contains("hidden");
+            const isQuizPlaying = !$("quiz-gameplay").classList.contains("hidden");
+
+            if (isSpeedPlaying || isSurvivalPlaying || isQuizPlaying) {
+                if (confirm("게임을 중단하고 게임 선택 화면으로 돌아가시겠습니까?")) {
+                    showGameSelection();
+                }
+            }
+        }
+
+        // Enter 키: 결과 화면에서 재시작
+        if (e.key === "Enter") {
+            const isSpeedResult = !$("speed-result").classList.contains("hidden");
+            const isSurvivalResult = !$("survival-result").classList.contains("hidden");
+            const isQuizResult = !$("quiz-result").classList.contains("hidden");
+
+            if (isSpeedResult) {
+                $("retry-btn").click();
+            } else if (isSurvivalResult) {
+                $("survival-retry-btn").click();
+            } else if (isQuizResult) {
+                $("quiz-retry-btn").click();
+            }
+        }
     });
 
 </script>

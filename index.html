@@ -72,6 +72,19 @@
         <h1 class="text-3xl font-bold">대한민국헌법 타자 연습</h1>
         <button id="theme-toggle" class="text-2xl">☀️</button>
     </div>
+
+    <!-- Mode Tabs -->
+    <div class="flex gap-2 mb-6 justify-center">
+        <button id="practice-mode-tab" class="px-6 py-2 rounded-lg font-semibold bg-blue-500 text-white transition-colors">
+            📝 연습 모드
+        </button>
+        <button id="game-mode-tab" class="px-6 py-2 rounded-lg font-semibold bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors">
+            🎮 게임 모드
+        </button>
+    </div>
+
+    <!-- Practice Mode Container -->
+    <div id="practice-mode-container">
     <div class="flex justify-between items-center mb-4 text-sm">
         <div class="flex items-center gap-2">
             <span class="text-gray-700 dark:text-gray-200 font-semibold">글꼴</span>
@@ -108,6 +121,128 @@
         🔢 입력 수: <span id="cnt">0</span>
         &nbsp; 🎯 정확도: <span id="accuracy">100%</span>
     </div>
+    </div>
+    <!-- End Practice Mode Container -->
+
+    <!-- Game Mode Container -->
+    <div id="game-mode-container" class="hidden">
+        <!-- Game Mode Selection Screen -->
+        <div id="game-selection-screen">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">게임 모드를 선택하세요</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- 60초 스피드 챌린지 카드 -->
+                <div class="mode-card bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow cursor-pointer border-2 border-transparent hover:border-blue-500" data-mode="speed">
+                    <div class="text-5xl mb-3">⏱️</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800 dark:text-gray-100">60초 챌린지</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">제한 시간 내 최대한 많이!</p>
+                    <div class="text-xs text-gray-500 dark:text-gray-500">최고: <span id="speed-best-record">0문장</span></div>
+                </div>
+
+                <!-- 헌법 퀴즈 모드 카드 (미구현) -->
+                <div class="mode-card bg-gray-200 dark:bg-gray-700 rounded-lg p-6 shadow-lg opacity-50 cursor-not-allowed border-2 border-transparent">
+                    <div class="text-5xl mb-3">📝</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800 dark:text-gray-100">퀴즈 모드</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">빈칸을 채우세요</p>
+                    <div class="text-xs text-red-500">준비 중</div>
+                </div>
+
+                <!-- 서바이벌 모드 카드 (미구현) -->
+                <div class="mode-card bg-gray-200 dark:bg-gray-700 rounded-lg p-6 shadow-lg opacity-50 cursor-not-allowed border-2 border-transparent">
+                    <div class="text-5xl mb-3">❤️</div>
+                    <h3 class="text-xl font-bold mb-2 text-gray-800 dark:text-gray-100">서바이벌 모드</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">생명을 지키세요!</p>
+                    <div class="text-xs text-red-500">준비 중</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 60초 스피드 챌린지 화면 -->
+        <div id="speed-challenge-screen" class="hidden">
+            <!-- 난이도 선택 -->
+            <div id="speed-difficulty-selection" class="text-center">
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-100">⏱️ 60초 스피드 챌린지</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">난이도를 선택하세요</p>
+                <div class="flex flex-col gap-4 max-w-md mx-auto">
+                    <button class="difficulty-btn bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg text-lg font-semibold transition-colors" data-difficulty="easy">
+                        🟢 쉬움 (15자 이하)
+                    </button>
+                    <button class="difficulty-btn bg-yellow-500 hover:bg-yellow-600 text-white py-4 px-6 rounded-lg text-lg font-semibold transition-colors" data-difficulty="normal">
+                        🟡 보통 (모든 문장)
+                    </button>
+                    <button class="difficulty-btn bg-red-500 hover:bg-red-600 text-white py-4 px-6 rounded-lg text-lg font-semibold transition-colors" data-difficulty="hard">
+                        🔴 어려움 (30자 이상)
+                    </button>
+                </div>
+                <button id="back-to-selection" class="mt-6 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg">
+                    ← 게임 선택으로 돌아가기
+                </button>
+            </div>
+
+            <!-- 카운트다운 -->
+            <div id="speed-countdown" class="hidden text-center">
+                <div class="text-9xl font-bold text-blue-500 dark:text-blue-400" id="countdown-number">3</div>
+            </div>
+
+            <!-- 게임 플레이 -->
+            <div id="speed-gameplay" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="text-lg font-semibold">
+                        <span class="text-red-500">⏱️ <span id="timer-display">60</span>초</span>
+                    </div>
+                    <div class="text-lg font-semibold">
+                        <span class="text-blue-500">📝 <span id="sentences-completed">0</span>문장</span>
+                    </div>
+                    <div class="text-lg font-semibold">
+                        <span class="text-green-500">💯 <span id="game-accuracy">100</span>%</span>
+                    </div>
+                </div>
+                <div id="game-text-display" class="text-2xl min-h-[80px] mb-4 whitespace-pre-wrap text-gray-800 dark:text-gray-100"></div>
+                <input id="game-typing-input" autocomplete="off" class="w-full border border-gray-400 dark:border-gray-600 px-4 py-3 text-xl rounded focus:outline-none focus:ring bg-white dark:bg-gray-800 dark:text-white" type="text" />
+            </div>
+
+            <!-- 결과 화면 -->
+            <div id="speed-result" class="hidden text-center">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">🎉 게임 종료!</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg max-w-md mx-auto">
+                    <div class="text-6xl mb-4">🏆</div>
+                    <div class="space-y-3 text-left">
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-600 dark:text-gray-400">완료 문장:</span>
+                            <span class="font-bold text-gray-800 dark:text-gray-100"><span id="result-sentences">0</span>개</span>
+                        </div>
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-600 dark:text-gray-400">평균 WPM:</span>
+                            <span class="font-bold text-gray-800 dark:text-gray-100"><span id="result-wpm">0</span></span>
+                        </div>
+                        <div class="flex justify-between text-lg">
+                            <span class="text-gray-600 dark:text-gray-400">정확도:</span>
+                            <span class="font-bold text-gray-800 dark:text-gray-100"><span id="result-accuracy">0</span>%</span>
+                        </div>
+                        <hr class="my-4 border-gray-300 dark:border-gray-600">
+                        <div class="flex justify-between text-2xl">
+                            <span class="text-gray-600 dark:text-gray-400">최종 점수:</span>
+                            <span class="font-bold text-blue-500"><span id="result-score">0</span>점</span>
+                        </div>
+                    </div>
+                    <div id="new-record-badge" class="hidden mt-4 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 py-2 px-4 rounded-lg">
+                        🎊 새로운 기록 달성!
+                    </div>
+                    <div class="mt-6 text-sm text-gray-500 dark:text-gray-400">
+                        🏆 개인 최고 기록: <span id="result-best-score">0</span>점
+                    </div>
+                </div>
+                <div class="flex gap-4 justify-center mt-6">
+                    <button id="retry-btn" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold">
+                        🔄 다시하기
+                    </button>
+                    <button id="back-to-game-selection" class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold">
+                        ← 게임 선택
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Game Mode Container -->
 </div>
 <script>
     const themeToggle = document.getElementById("theme-toggle");
@@ -278,6 +413,318 @@
 
     renderText();
     }
+
+    // ==================== 게임 모드 기능 ====================
+
+    // 탭 전환
+    const practiceModeTab = $("practice-mode-tab");
+    const gameModeTab = $("game-mode-tab");
+    const practiceModeContainer = $("practice-mode-container");
+    const gameModeContainer = $("game-mode-container");
+
+    practiceModeTab.addEventListener("click", () => {
+        practiceModeContainer.classList.remove("hidden");
+        gameModeContainer.classList.add("hidden");
+        practiceModeTab.classList.remove("bg-gray-300", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+        practiceModeTab.classList.add("bg-blue-500", "text-white");
+        gameModeTab.classList.remove("bg-blue-500", "text-white");
+        gameModeTab.classList.add("bg-gray-300", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+    });
+
+    gameModeTab.addEventListener("click", () => {
+        practiceModeContainer.classList.add("hidden");
+        gameModeContainer.classList.remove("hidden");
+        gameModeTab.classList.remove("bg-gray-300", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+        gameModeTab.classList.add("bg-blue-500", "text-white");
+        practiceModeTab.classList.remove("bg-blue-500", "text-white");
+        practiceModeTab.classList.add("bg-gray-300", "dark:bg-gray-700", "text-gray-700", "dark:text-gray-300");
+
+        // 게임 선택 화면으로 초기화
+        showGameSelection();
+        loadBestRecords();
+    });
+
+    // 게임 모드 선택
+    const gameSelectionScreen = $("game-selection-screen");
+    const speedChallengeScreen = $("speed-challenge-screen");
+
+    const modeCards = document.querySelectorAll(".mode-card[data-mode]");
+    modeCards.forEach(card => {
+        card.addEventListener("click", () => {
+            const mode = card.dataset.mode;
+            if (mode === "speed") {
+                gameSelectionScreen.classList.add("hidden");
+                speedChallengeScreen.classList.remove("hidden");
+                $("speed-difficulty-selection").classList.remove("hidden");
+            }
+        });
+    });
+
+    // 게임 선택 화면으로 돌아가기
+    function showGameSelection() {
+        gameSelectionScreen.classList.remove("hidden");
+        speedChallengeScreen.classList.add("hidden");
+        $("speed-difficulty-selection").classList.remove("hidden");
+        $("speed-countdown").classList.add("hidden");
+        $("speed-gameplay").classList.add("hidden");
+        $("speed-result").classList.add("hidden");
+    }
+
+    $("back-to-selection").addEventListener("click", showGameSelection);
+    $("back-to-game-selection").addEventListener("click", showGameSelection);
+
+    // ==================== 60초 스피드 챌린지 ====================
+
+    let speedGameState = {
+        difficulty: "normal",
+        timeLeft: 60,
+        sentencesCompleted: 0,
+        currentText: "",
+        currentInput: "",
+        totalCorrect: 0,
+        totalInput: 0,
+        wpmList: [],
+        gameStartTime: null,
+        timerInterval: null,
+        gameSentences: []
+    };
+
+    // 난이도별 문장 필터링
+    function getSentencesByDifficulty(difficulty) {
+        if (difficulty === "easy") {
+            return korSentences.filter(s => s.length <= 15);
+        } else if (difficulty === "hard") {
+            return korSentences.filter(s => s.length >= 30);
+        } else {
+            return korSentences;
+        }
+    }
+
+    // 난이도 선택
+    const difficultyBtns = document.querySelectorAll(".difficulty-btn");
+    difficultyBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const difficulty = btn.dataset.difficulty;
+            speedGameState.difficulty = difficulty;
+            speedGameState.gameSentences = getSentencesByDifficulty(difficulty);
+            startCountdown();
+        });
+    });
+
+    // 카운트다운
+    function startCountdown() {
+        $("speed-difficulty-selection").classList.add("hidden");
+        $("speed-countdown").classList.remove("hidden");
+
+        let count = 3;
+        $("countdown-number").textContent = count;
+
+        const countInterval = setInterval(() => {
+            count--;
+            if (count > 0) {
+                $("countdown-number").textContent = count;
+            } else {
+                clearInterval(countInterval);
+                $("speed-countdown").classList.add("hidden");
+                startSpeedGame();
+            }
+        }, 1000);
+    }
+
+    // 게임 시작
+    function startSpeedGame() {
+        // 게임 상태 초기화
+        speedGameState.timeLeft = 60;
+        speedGameState.sentencesCompleted = 0;
+        speedGameState.currentInput = "";
+        speedGameState.totalCorrect = 0;
+        speedGameState.totalInput = 0;
+        speedGameState.wpmList = [];
+        speedGameState.gameStartTime = Date.now();
+
+        // 첫 문장 로드
+        loadNextSentence();
+
+        // 화면 표시
+        $("speed-gameplay").classList.remove("hidden");
+        $("game-typing-input").value = "";
+        $("game-typing-input").focus();
+        $("sentences-completed").textContent = 0;
+        $("game-accuracy").textContent = 100;
+        $("timer-display").textContent = 60;
+
+        // 타이머 시작
+        speedGameState.timerInterval = setInterval(() => {
+            speedGameState.timeLeft--;
+            $("timer-display").textContent = speedGameState.timeLeft;
+
+            if (speedGameState.timeLeft <= 0) {
+                endSpeedGame();
+            }
+        }, 1000);
+    }
+
+    // 다음 문장 로드
+    function loadNextSentence() {
+        const randomIndex = Math.floor(Math.random() * speedGameState.gameSentences.length);
+        speedGameState.currentText = speedGameState.gameSentences[randomIndex];
+        speedGameState.currentInput = "";
+        renderGameText();
+    }
+
+    // 게임 텍스트 렌더링
+    function renderGameText() {
+        const text = speedGameState.currentText;
+        const input = speedGameState.currentInput;
+
+        const result = [...text].map((char, i) => {
+            let style = "";
+            if (i < input.length) {
+                style = char === input[i] ? "text-black dark:text-white" : "text-red-500";
+            } else if (i === input.length) {
+                style = "highlight-bg";
+            }
+            return `<span class="${style}">${char}</span>`;
+        });
+
+        $("game-text-display").innerHTML = result.join("");
+    }
+
+    // 게임 입력 처리
+    $("game-typing-input").addEventListener("input", (e) => {
+        speedGameState.currentInput = e.target.value;
+        speedGameState.totalInput++;
+
+        renderGameText();
+        updateGameAccuracy();
+
+        // 문장 완료 확인
+        if (speedGameState.currentInput.length === speedGameState.currentText.length) {
+            // 정확도 계산
+            let correct = 0;
+            for (let i = 0; i < speedGameState.currentInput.length; i++) {
+                if (speedGameState.currentInput[i] === speedGameState.currentText[i]) {
+                    correct++;
+                    speedGameState.totalCorrect++;
+                }
+            }
+
+            // WPM 계산
+            const elapsedMin = (Date.now() - speedGameState.gameStartTime) / 1000 / 60;
+            const wpm = Math.round(speedGameState.currentInput.trim().split(/\s+/).length / elapsedMin);
+            speedGameState.wpmList.push(wpm);
+
+            // 다음 문장
+            speedGameState.sentencesCompleted++;
+            $("sentences-completed").textContent = speedGameState.sentencesCompleted;
+            $("game-typing-input").value = "";
+            loadNextSentence();
+        }
+    });
+
+    // 정확도 업데이트
+    function updateGameAccuracy() {
+        let correct = 0;
+        const text = speedGameState.currentText;
+        const input = speedGameState.currentInput;
+
+        for (let i = 0; i < input.length && i < text.length; i++) {
+            if (input[i] === text[i]) {
+                correct++;
+            }
+        }
+
+        const totalChars = speedGameState.totalInput + input.length;
+        const totalCorrectChars = speedGameState.totalCorrect + correct;
+        const accuracy = totalChars > 0 ? Math.round((totalCorrectChars / totalChars) * 100) : 100;
+
+        $("game-accuracy").textContent = accuracy;
+    }
+
+    // 게임 종료
+    function endSpeedGame() {
+        clearInterval(speedGameState.timerInterval);
+
+        $("speed-gameplay").classList.add("hidden");
+        $("speed-result").classList.remove("hidden");
+
+        // 결과 계산
+        const sentences = speedGameState.sentencesCompleted;
+        const avgWPM = speedGameState.wpmList.length > 0
+            ? Math.round(speedGameState.wpmList.reduce((a, b) => a + b, 0) / speedGameState.wpmList.length)
+            : 0;
+        const accuracy = parseInt($("game-accuracy").textContent);
+        const score = (sentences * 100) + (avgWPM * 10) + (accuracy * 5);
+
+        // 결과 표시
+        $("result-sentences").textContent = sentences;
+        $("result-wpm").textContent = avgWPM;
+        $("result-accuracy").textContent = accuracy;
+        $("result-score").textContent = score;
+
+        // 최고 기록 확인 및 저장
+        const difficulty = speedGameState.difficulty;
+        const savedData = loadGameData();
+        const bestScore = savedData.speedChallenge[difficulty]?.bestScore || 0;
+
+        $("result-best-score").textContent = Math.max(bestScore, score);
+
+        if (score > bestScore) {
+            $("new-record-badge").classList.remove("hidden");
+            savedData.speedChallenge[difficulty] = {
+                bestScore: score,
+                bestDate: new Date().toISOString().split('T')[0],
+                bestSentences: sentences,
+                bestWPM: avgWPM,
+                playCount: (savedData.speedChallenge[difficulty]?.playCount || 0) + 1
+            };
+            saveGameData(savedData);
+            loadBestRecords();
+        } else {
+            $("new-record-badge").classList.add("hidden");
+            savedData.speedChallenge[difficulty].playCount++;
+            saveGameData(savedData);
+        }
+    }
+
+    // 다시하기
+    $("retry-btn").addEventListener("click", () => {
+        $("speed-result").classList.add("hidden");
+        $("speed-difficulty-selection").classList.remove("hidden");
+    });
+
+    // LocalStorage 관리
+    function loadGameData() {
+        const defaultData = {
+            speedChallenge: {
+                easy: { bestScore: 0, bestDate: null, bestSentences: 0, bestWPM: 0, playCount: 0 },
+                normal: { bestScore: 0, bestDate: null, bestSentences: 0, bestWPM: 0, playCount: 0 },
+                hard: { bestScore: 0, bestDate: null, bestSentences: 0, bestWPM: 0, playCount: 0 }
+            }
+        };
+
+        try {
+            const saved = localStorage.getItem('koreaConstitutionTyping_gameData');
+            return saved ? JSON.parse(saved) : defaultData;
+        } catch (e) {
+            return defaultData;
+        }
+    }
+
+    function saveGameData(data) {
+        try {
+            localStorage.setItem('koreaConstitutionTyping_gameData', JSON.stringify(data));
+        } catch (e) {
+            console.error('Failed to save game data:', e);
+        }
+    }
+
+    function loadBestRecords() {
+        const data = loadGameData();
+        const bestNormal = data.speedChallenge.normal.bestSentences || 0;
+        $("speed-best-record").textContent = bestNormal + "문장";
+    }
+
 </script>
 </body>
 </html>

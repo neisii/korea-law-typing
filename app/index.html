@@ -680,6 +680,21 @@
 
     // 게임 선택 화면으로 돌아가기
     function showGameSelection() {
+        // 모든 타이머 정리
+        if (speedGameState.timerInterval) {
+            clearInterval(speedGameState.timerInterval);
+            speedGameState.timerInterval = null;
+        }
+        if (survivalGameState.timerInterval) {
+            clearInterval(survivalGameState.timerInterval);
+            survivalGameState.timerInterval = null;
+        }
+        if (quizGameState.timerInterval) {
+            clearInterval(quizGameState.timerInterval);
+            quizGameState.timerInterval = null;
+        }
+
+        // 화면 전환
         gameSelectionScreen.classList.remove("hidden");
         speedChallengeScreen.classList.add("hidden");
         survivalModeScreen.classList.add("hidden");
